@@ -22,7 +22,7 @@ OCR opzionale, serve solo per il comando `text`:
 Doppio click su **`ScreenAgent.bat`**, oppure:
 
 ```
-python gui.py
+python ScreenAgent.py
 ```
 
 Tema scuro, tre riquadri: a sinistra la lista delle immagini, al centro l'**anteprima**
