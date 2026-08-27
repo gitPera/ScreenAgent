@@ -1,0 +1,10 @@
+{
+  "steps": [
+    {"do": "wait_for",   "target": "pulsante_salva", "timeout": 30},
+    {"do": "click",      "target": "pulsante_salva", "timeout": 5, "threshold": 0.87},
+    {"do": "wait",       "seconds": 1},
+    {"do": "type",       "text": "nome file"},
+    {"do": "key",        "keys": "enter"},
+    {"do": "click_text", "text": "Conferma"}
+  ]
+}
