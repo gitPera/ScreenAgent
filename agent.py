@@ -6,7 +6,7 @@ Uso rapido:
     python agent.py click pulsante_salva           cliccalo
     python agent.py click pulsante_salva --wait 30 aspetta finche' compare, poi clicca
     python agent.py text "Salva"                   clicca la scritta "Salva" (OCR)
-    python agent.py run script.esempio.json        esegue una sequenza di azioni
+    python agent.py run mia_sequenza.json          esegue una sequenza di azioni
     python agent.py repl                           modalita' interattiva: comandi a mano
 """
 import argparse
@@ -21,7 +21,8 @@ import actions
 import screen as scr
 import vision
 
-TPL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+import percorsi
+TPL_DIR = percorsi.TEMPLATES
 SCALES = (1.0,)
 
 

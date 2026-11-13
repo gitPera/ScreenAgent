@@ -1,17 +1,25 @@
-"""Azioni sul PC: mouse e tastiera."""
+"""Azioni sul PC: mouse e tastiera.
+
+Il puntatore viene spostato da clicker.muovi, che scorre fino al bersaglio
+invece di saltarci sopra di colpo.
+"""
 import time
+
 import pyautogui
+
+import clicker
 
 pyautogui.FAILSAFE = True   # sposta il mouse nell'angolo alto-sinistra per abortire tutto
 pyautogui.PAUSE = 0.05
 
 
-def move(x, y, duration=0.15):
-    pyautogui.moveTo(x, y, duration=duration)
+def move(x, y, duration=None):
+    clicker.muovi(x, y, duration)
 
 
-def click(x, y, button="left", clicks=1, duration=0.15):
-    pyautogui.moveTo(x, y, duration=duration)
+def click(x, y, button="left", clicks=1, duration=None):
+    clicker.muovi(x, y, duration)
+    time.sleep(0.05)          # un attimo fermo prima di premere, come faresti tu
     pyautogui.click(button=button, clicks=clicks, interval=0.08)
 
 
@@ -24,7 +32,8 @@ def right_click(x, y):
 
 
 def drag(x1, y1, x2, y2, duration=0.4):
-    pyautogui.moveTo(x1, y1, duration=0.15)
+    clicker.muovi(x1, y1)
+    time.sleep(0.05)
     pyautogui.dragTo(x2, y2, duration=duration, button="left")
 
 
@@ -52,9 +61,11 @@ def hotkey(*keys):
 
 
 def scroll(amount, x=None, y=None):
+    # la rotella passa da clicker: pyautogui.scroll su Windows manda un delta
+    # sbagliato e non scorre niente (vedi clicker.scorri)
     if x is not None:
-        pyautogui.moveTo(x, y)
-    pyautogui.scroll(amount)
+        clicker.muovi(x, y)
+    clicker.scorri(amount)
 
 
 def wait(seconds):

@@ -12,7 +12,8 @@ from PIL import ImageGrab
 
 import vision
 
-TPL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+import percorsi
+TPL_DIR = percorsi.TEMPLATES
 
 
 def main():

@@ -1,0 +1,5 @@
+# i .bat devono avere i fine riga di Windows anche dopo un clone (le etichette
+# "goto" con i fine riga Unix non funzionano in modo affidabile)
+*.bat text eol=crlf
+*.iss text eol=crlf
+*.ico binary

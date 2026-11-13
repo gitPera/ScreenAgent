@@ -1,0 +1,20 @@
+# artefatti di build (PyInstaller / installer): l'installer va nelle Releases
+build/
+dist/
+Output/
+*.spec.bak
+__pycache__/
+*.pyc
+
+# dati dell'utente: immagini catturate, sequenze, macro. Restano sulla macchina,
+# il programma ricrea da solo le cartelle vuote al primo avvio
+templates/
+sequenze/
+macro/
+catena.json
+sequenza.json
+registrazione.json
+
+# lanciatori personali: le copie di AvviaSequenza.bat dedicate a una sequenza
+Avvia*.bat
+!AvviaSequenza.bat

@@ -28,7 +28,11 @@ GIU_SU = {
     "centrale": (0x0020, 0x0040),
 }
 VK_MOUSE = {0x01: "sinistro", 0x02: "destro", 0x04: "centrale"}
+VK_ESC = 0x1B        # tasto di emergenza: ferma tutto, sempre e comunque
 KEYEVENTF_KEYUP = 0x0002
+MOUSEEVENTF_WHEEL = 0x0800
+MOUSEEVENTF_HWHEEL = 0x01000
+TACCA = 120          # Windows conta 120 per ogni scatto di rotella
 
 NOMI_TASTI = {0x01: "click sinistro", 0x02: "click destro", 0x04: "click centrale",
               0x08: "backspace", 0x09: "tab", 0x0D: "invio", 0x10: "shift",
@@ -63,6 +67,17 @@ def premuto(vk):
     return bool(user32.GetAsyncKeyState(vk) & 0x8000)
 
 
+def premuto_o_scattato(vk):
+    """True se il tasto e' giu' adesso (bit 0x8000) OPPURE se e' stato premuto
+    da quando l'abbiamo chiesto l'ultima volta (bit 0x0001).
+
+    Serve per i tasti di stop: controllando solo "e' giu' adesso" ogni 30 ms,
+    una pressione piu' breve di un controllo passa inosservata, e un freno
+    d'emergenza che ogni tanto non risponde non serve a niente.
+    """
+    return bool(user32.GetAsyncKeyState(vk) & 0x8001)
+
+
 def click(pulsante="sinistro", doppio=False, x=None, y=None):
     if x is not None and y is not None:
         sposta(x, y)
@@ -73,6 +88,54 @@ def click(pulsante="sinistro", doppio=False, x=None, y=None):
         time.sleep(0.04)          # dentro il tempo di doppio click di Windows
         user32.mouse_event(giu, 0, 0, 0, 0)
         user32.mouse_event(su, 0, 0, 0, 0)
+
+
+def muovi(x, y, durata=None):
+    """Porta il cursore a destinazione scorrendo, non di scatto.
+
+    Fa molti passetti con una curva che parte piano, accelera e frena in
+    arrivo (ease-in-out): e' il profilo di un movimento a mano, e alcune
+    applicazioni ignorano i puntatori che 'teletrasportano'.
+    Se non dici quanto deve durare, lo decide la distanza.
+    """
+    x, y = int(x), int(y)
+    x0, y0 = posizione()
+    dx, dy = x - x0, y - y0
+    distanza = (dx * dx + dy * dy) ** 0.5
+    if distanza < 3:
+        sposta(x, y)
+        return
+    if durata is None:
+        durata = min(0.55, max(0.12, distanza / 2200.0))
+    passi = int(max(12, min(distanza / 5.0, 140)))
+
+    inizio = time.perf_counter()
+    for i in range(1, passi + 1):
+        t = float(i) / passi
+        curva = t * t * (3 - 2 * t)          # ease-in-out
+        sposta(int(round(x0 + dx * curva)), int(round(y0 + dy * curva)))
+        prossimo = inizio + durata * t
+        ritardo = prossimo - time.perf_counter()
+        if ritardo > 0:
+            time.sleep(ritardo)
+    sposta(x, y)                              # l'arrivo dev'essere esatto
+
+
+def scorri(tacche, orizzontale=False):
+    """Rotella del mouse: numero positivo = in su', negativo = in giu'.
+
+    Non si usa pyautogui.scroll perche' manda a Windows un delta pari al numero
+    di scatti (3) invece dei 120 per scatto che Windows si aspetta: il sistema lo
+    considera un movimento da nulla e non scorre niente.
+    """
+    tacche = int(tacche)
+    if not tacche:
+        return
+    evento = MOUSEEVENTF_HWHEEL if orizzontale else MOUSEEVENTF_WHEEL
+    delta = TACCA if tacche > 0 else -TACCA
+    for _ in range(abs(tacche)):
+        user32.mouse_event(evento, 0, 0, ctypes.c_int(delta), 0)
+        time.sleep(0.02)
 
 
 def tasto(vk, giu=True):
@@ -164,6 +227,8 @@ def riproduci(eventi, stop, ripetizioni=1, pausa_tra_giri=0.0, su_giro=None):
 
 
 def salva(eventi, percorso):
+    # se la cartella (macro/) non c'e' la creo: il salvataggio non deve fallire
+    os.makedirs(os.path.dirname(os.path.abspath(percorso)), exist_ok=True)
     with open(percorso, "w", encoding="utf-8") as f:
         json.dump(eventi, f)
 
